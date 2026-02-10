@@ -8,7 +8,7 @@ from shlex import split
 from pathlib import Path
 from typing import Optional
 from command_processor import CommandProcessor
-from Profile import Profile, DsuFileError, DsuProfileError
+from Profile import Profile, Post, DsuFileError, DsuProfileError
 
 
 class UI:
@@ -16,7 +16,6 @@ class UI:
         self.processor = CommandProcessor()
         self.current_path: Optional[str] = None
         self.current_profile: Optional[Profile] = None
-
         self.in_admin_mode: bool = False
 
     @staticmethod
@@ -265,12 +264,12 @@ class UI:
                 self._print_profile(options)
                 return True
         
-            print("ERROR")
-            return True
+            if cmd == "E":
+                self._edit_profile(options)
+                return True
         
         print("ERROR")
         return True
-
 
     #
     # Admin / Friendly Loop
@@ -302,3 +301,105 @@ class UI:
 
             if not self._process_line(line):
                 break
+
+    #
+    # Edit Option
+    #
+    def _edit_profile(self, options: list[str]) -> None:
+        prof = self.current_profile
+        path = self.current_path
+        if prof is None or path is None:
+            print("ERROR")
+            return
+        
+        if not options:
+            print("ERROR")
+            return
+        
+        # if save fails
+        old_username = prof.username
+        old_password = prof.password
+        old_bio = prof.bio
+        old_posts = [(p.entry, p.timestamp) for p in prof.get_posts()]
+
+        plan: list[tuple[str, object]] = []
+
+        shadow_posts = list(prof.get_posts())
+
+        i = 0
+        while i < len(options):
+            opt = options[i]
+
+            if opt in {"-usr", "-pwd", "-bio", "-addpost", "-delpost"}:
+                if i + 1 >= len(options):
+                    print("ERROR")
+                    return
+                val = options[i + 1]
+
+                if opt == "-usr":
+                    if not self._valid_userpass(val):
+                        print("ERROR")
+                        return
+                    plan.append(("usr", val))
+
+                elif opt == "-pwd":
+                    if not self._valid_userpass(val):
+                        print("ERROR")
+                        return
+                    plan.append(("pwd", val))
+
+                elif opt == "-bio":
+                    if val.strip() == "":
+                        print("ERROR")
+                        return
+                    plan.append(("bio", val))
+
+                elif opt == "-addpost":
+                    if val.strip() == "":
+                        print("ERROR")
+                        return
+                    plan.append(("addpost", val))
+
+                elif opt == "-delpost":
+                    try:
+                        idx = int(val)
+                    except ValueError:
+                        print("ERROR")
+                        return
+                    if idx < 0 or idx >= len(shadow_posts):
+                        print("ERROR")
+                        return
+                    plan.append(("delpost", idx))
+
+                i += 2
+            else:
+                print("ERROR")
+                return
+        
+        for op, val in plan:
+            if op == "usr":
+                prof.username = str(val)
+            elif op == "pwd":
+                prof.password = str(val)
+            elif op == "bio":
+                prof.bio = str(val)
+            elif op == "addpost":
+                prof.add_post(Post(str(val)))
+            elif op == "delpost":
+                ok = prof.del_post(int(val))
+                if not ok:
+                    print("ERROR")
+                    return
+        try:
+            prof.save_profile(path)
+        except DsuFileError:
+            prof.username = old_username
+            prof.password = old_password
+            prof.bio = old_bio
+
+            prof.get_posts().clear()
+            for entry, ts in old_posts:
+                prof.add_post(Post(entry, ts))
+
+            print("ERROR")
+            return
