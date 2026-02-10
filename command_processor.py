@@ -139,4 +139,20 @@ class CommandProcessor:
         except Exception:
             print("ERROR")
 
-    
+    # defining function for R (read) command
+    def _read(self, path):
+        path = Path(path)
+
+        if not path.exists() or not path.is_file() or path.suffix != ".dsu":
+            print("ERROR")
+            return
+        
+        if path.stat().st_size == 0:
+            sys.stdout.write("EMPTY")
+            return
+        
+        try:
+            with open(path, "r") as f:
+                sys.stdout.write(f.read())
+        except Exception:
+            print("ERROR")
