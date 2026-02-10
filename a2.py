@@ -4,9 +4,11 @@
 # justicd1@uci.edu
 # 72329664
 
-from ui import run_admin, run_friendly
+from ui import UI
 
 def main() -> None:
+    ui = UI()
+
     print("Weclome!")
     print("Type 'admin' to enter admin mode, or press enter to continue.")
 
@@ -16,9 +18,9 @@ def main() -> None:
         return
     
     if first == "admin":
-        run_admin()
+        ui.run_admin()
     else:
-        run_friendly(first)
+        ui.run_friendly(first)
 
 if __name__ == "__main__":
     main()
