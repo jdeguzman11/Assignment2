@@ -6,6 +6,7 @@
 
 from ui import UI
 
+
 def main() -> None:
     ui = UI()
 
@@ -16,11 +17,12 @@ def main() -> None:
         first = input("> ").strip()
     except EOFError:
         return
-    
+
     if first == "admin":
         ui.run_admin()
     else:
         ui.run_friendly(first)
+
 
 if __name__ == "__main__":
     main()

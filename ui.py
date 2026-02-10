@@ -26,24 +26,24 @@ class UI:
         if i + 1 >= len(options):
             return None
         return options[i + 1]
-    
+
     @staticmethod
     def _valid_userpass(value: str) -> bool:
         if value.strip() == "":
             return False
         return not any(ch.isspace() for ch in value)
-    
+
     def _build_dsu_path(self, directory: str, name: str) -> Optional[str]:
         d = Path(directory)
         if not d.exists() or not d.is_dir():
             return None
-        
+
         filename = name
         if not filename.endswith(".dsu"):
             filename += ".dsu"
 
         return str((d / filename).resolve())
-    
+
     def _collect_profile_info(self) -> Optional[Profile]:
         try:
             print("username:")
@@ -56,20 +56,20 @@ class UI:
             bio = input().strip()
         except EOFError:
             return None
-        
+
         if not self._valid_userpass(username):
             return None
         if not self._valid_userpass(password):
             return None
         if bio.strip() == "":
             return None
-        
+
         prof = Profile()
         prof.username = username
         prof.password = password
-        prof.bio = bio 
+        prof.bio = bio
         return prof
-    
+
     @staticmethod
     def _touch_empty_file(path: str) -> bool:
         p = Path(path)
@@ -80,7 +80,7 @@ class UI:
             return True
         except Exception:
             return False
-        
+
     @staticmethod
     def _safe_delete(path: str) -> None:
         try:
@@ -94,20 +94,20 @@ class UI:
     def _split_path_and_options(tokens: list[str]) -> tuple[Optional[str], list[str]]:
         if not tokens:
             return None, []
-        
+
         path_tokens: list[str] = []
         i = 0
         while i < len(tokens) and not tokens[i].startswith("-"):
             path_tokens.append(tokens[i])
             i += 1
-        
+
         if not path_tokens:
             return None, []
-        
+
         path = " ".join(path_tokens)
         options = tokens[i:]
         return path, options
-    
+
     #
     # Open DSU Command
     #
@@ -115,13 +115,13 @@ class UI:
         resolved = str(Path(path).resolve())
 
         prof = Profile()
-        
+
         try:
             prof.load_profile(resolved)
         except (DsuFileError, DsuProfileError):
             print("ERROR")
             return
-        
+
         self.current_profile = prof
         self.current_path = resolved
         print(f"LOADED {resolved}")
@@ -134,32 +134,32 @@ class UI:
         if name is None:
             print("ERROR")
             return
-        
+
         full_path = self._build_dsu_path(directory, name)
         if full_path is None:
             print("ERROR")
             return
-        
+
         if Path(full_path).exists():
             self._open_dsu(full_path)
             return
-        
+
         prof = self._collect_profile_info()
         if prof is None:
             print("ERROR")
             return
-        
+
         if not self._touch_empty_file(full_path):
             print("ERROR")
             return
-        
+
         try:
             prof.save_profile(full_path)
         except DsuFileError:
             self._safe_delete(full_path)
             print("ERROR")
             return
-        
+
         self.current_profile = prof
         self.current_path = full_path
         print(f"LOADED {full_path}")
@@ -176,7 +176,7 @@ class UI:
         if not options:
             print("ERROR")
             return
-        
+
         i = 0
         while i < len(options):
             opt = options[i]
@@ -188,7 +188,7 @@ class UI:
             elif opt == "-pwd":
                 print(prof.password)
                 i += 1
-            
+
             elif opt == "-bio":
                 print(prof.bio)
                 i += 1
@@ -208,12 +208,12 @@ class UI:
                 except ValueError:
                     print("ERROR")
                     return
-                
+
                 posts = prof.get_posts()
                 if idx < 0 or idx >= len(posts):
                     print("ERROR")
                     return
-                
+
                 print(posts[idx].entry)
                 i += 2
 
@@ -229,7 +229,7 @@ class UI:
             else:
                 print("ERROR")
                 return
-            
+
     #
     # Core Command Processing
     #
@@ -238,19 +238,19 @@ class UI:
 
         if line == "Q":
             return False
-    
+
         if line == "":
             print("ERROR")
             return True
-    
+
         try:
             parts = split(line)
         except ValueError:
             print("ERROR")
             return True
-    
+
         cmd = parts[0].upper()
-    
+
         path_commands = {"L", "C", "D", "R", "O"}
         no_path_commands = {"E", "P"}
 
@@ -258,7 +258,7 @@ class UI:
             if len(parts) < 2:
                 print("ERROR")
                 return True
-        
+
             path, options = self._split_path_and_options(parts[1:])
             if path is None:
                 print("ERROR")
@@ -267,29 +267,29 @@ class UI:
             if cmd == "O":
                 self._open_dsu(path)
                 return True
-            
+
             if cmd == "C":
                 self._create_dsu(path, options)
                 return True
 
             self.processor.handle(cmd, path, options)
             return True
-    
+
         if cmd in no_path_commands:
-            if self.current_profile is None or self.current_path is None: 
+            if self.current_profile is None or self.current_path is None:
                 print("ERROR")
                 return True
-            
+
             options = parts[1:]
 
             if cmd == "P":
                 self._print_profile(options)
                 return True
-        
+
             if cmd == "E":
                 self._edit_profile(options)
                 return True
-        
+
         print("ERROR")
         return True
 
@@ -302,7 +302,7 @@ class UI:
         if first_choice.strip() != "":
             if not self._process_line(first_choice):
                 return
-        
+
         while True:
             try:
                 line = input("> ")
@@ -333,11 +333,11 @@ class UI:
         if prof is None or path is None:
             print("ERROR")
             return
-        
+
         if not options:
             print("ERROR")
             return
-        
+
         # if save fails
         old_username = prof.username
         old_password = prof.password
@@ -399,7 +399,7 @@ class UI:
             else:
                 print("ERROR")
                 return
-        
+
         for op, val in plan:
             if op == "usr":
                 prof.username = str(val)
