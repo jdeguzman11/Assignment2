@@ -10,7 +10,10 @@ import sys
 class CommandProcessor:
 
     # defining function that handles what command function to call
-    def handle(self, command, path, options):
+    def handle(self, command: str, path: str, options: list[str] | None) -> None:
+        if options is None:
+            option = []
+        
         if command == "L":
             self._list(path, options)
         elif command == "C":
@@ -24,15 +27,15 @@ class CommandProcessor:
     
 
     # defining function for L (list) command
-    def _list(self, path, options):
-        path = Path(path)
+    def _list(self, path: str, options: list[str]) -> None:
+        path_obj = Path(path)
 
-        if not path.exists() or not path.is_dir():
+        if not path_obj.exists() or not path_obj.is_dir():
             print("ERROR")
             return
         
         try:
-            items = list(path.iterdir())
+            items = list(path_obj.iterdir())
         except Exception:
             print("ERROR")
             return
@@ -55,14 +58,14 @@ class CommandProcessor:
             if "-f" not in options:
                 print(str(d))
             if "-r" in options:
-                self._list(d, options)
+                self._list(str(d), options)
 
 
     # defining function for -s option
-    def _list_search(self, files, dirs, options):
+    def _list_search(self, files: list[Path], dirs: list[Path], options: list[str]) -> None:
         try:
             name = options[options.index("-s") + 1]
-        except IndexError:
+        except (ValueError, IndexError):
             print("ERROR")
             return
         
@@ -72,13 +75,13 @@ class CommandProcessor:
 
         if "-r" in options:
             for d in dirs:
-                self._list(d, options)
+                self._list(str(d), options)
 
     # defining function for -e option
-    def _list_extension(self, files, dirs, options):
+    def _list_extension(self, files: list[Path], dirs: list[Path], options: list[str]) -> None:
         try:
             ext = options[options.index("-e") + 1]
-        except IndexError:
+        except (ValueError, IndexError):
             print("ERROR")
             return
         
@@ -88,18 +91,18 @@ class CommandProcessor:
 
         if "-r" in options:
             for d in dirs:
-                self._list(d, options)
+                self._list(str(d), options)
 
 
     # defining function for C (create) command
-    def _create(self, path, options):
+    def _create(self, path: str, options: list[str]) -> None:
         if "-n" not in options:
             print("ERROR")
             return
         
         try:
             name = options[options.index("-n") + 1]
-        except IndexError:
+        except (ValueError, IndexError):
             print("ERROR")
             return
         
@@ -125,34 +128,35 @@ class CommandProcessor:
             print("ERROR")
 
     # defining function for D (delete) command
-    def _delete(self, path):
-        path = Path(path)
+    def _delete(self, path: str) -> None:
+        path_obj = Path(path)
 
-        if not path.exists() or not path.is_file() or path.suffix != ".dsu":
+        if not path_obj.exists() or not path_obj.is_file() or path_obj.suffix != ".dsu":
             print("ERROR")
             return
         
         try:
-            resolved = str(path.resolve())
-            path.unlink()
+            resolved = str(path_obj.resolve())
+            path_obj.unlink()
             print(f"{resolved} DELETED")
         except Exception:
             print("ERROR")
 
     # defining function for R (read) command
-    def _read(self, path):
-        path = Path(path)
+    def _read(self, path: str) -> None:
+        path_obj = Path(path)
 
-        if not path.exists() or not path.is_file() or path.suffix != ".dsu":
+        if not path_obj.exists() or not path_obj.is_file() or path_obj.suffix != ".dsu":
             print("ERROR")
             return
         
-        if path.stat().st_size == 0:
+        if path_obj.stat().st_size == 0:
             sys.stdout.write("EMPTY")
             return
         
         try:
-            with open(path, "r") as f:
+            with open(path_obj, "r") as f:
                 sys.stdout.write(f.read())
         except Exception:
             print("ERROR")
+

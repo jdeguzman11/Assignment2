@@ -7,20 +7,20 @@
 from shlex import split
 from command_processor import CommandProcessor
 
-def main():
+def main() -> None:
     processor = CommandProcessor()
 
     while True:
         try:
-            raw_input = input().strip()
+            line = input().strip()
         except EOFError:
             break
 
-        if raw_input == "Q":
+        if line == "Q":
             break
         
         try:
-            parts = split(raw_input)
+            parts = split(line)
         except ValueError:
             print("ERROR")
             continue
@@ -30,6 +30,8 @@ def main():
             continue
 
         command, path, *options = parts
+        command = command.upper()
+        
         processor.handle(command, path, options)
 
 if __name__ == "__main__":
