@@ -1,4 +1,4 @@
-# command_processor
+# command_processor.py
 
 # Justin DeGuzman
 # justicd1@uci.edu
@@ -27,7 +27,7 @@ class CommandProcessor:
     def _list(self, path, options):
         path = Path(path)
 
-        if not path.exists() or not path.isdir():
+        if not path.exists() or not path.is_dir():
             print("ERROR")
             return
         
@@ -45,15 +45,15 @@ class CommandProcessor:
             return
         
         if "-e" in options:
-            self._list_extenstion(files, dirs, options)
+            self._list_extension(files, dirs, options)
             return
 
         for f in files:
-            print(f)
+            print(str(f))
         
         for d in dirs:
             if "-f" not in options:
-                print(d)
+                print(str(d))
             if "-r" in options:
                 self._list(d, options)
 
@@ -68,7 +68,7 @@ class CommandProcessor:
         
         for f in files:
             if f.name == name:
-                print(f)
+                print(str(f))
 
         if "-r" in options:
             for d in dirs:
@@ -84,7 +84,7 @@ class CommandProcessor:
         
         for f in files:
             if f.suffix == f".{ext}":
-                print(f)
+                print(str(f))
 
         if "-r" in options:
             for d in dirs:
@@ -105,7 +105,7 @@ class CommandProcessor:
         
         directory = Path(path)
 
-        if not directory.exists() or not directory.isdir():
+        if not directory.exists() or not directory.is_dir():
             print("ERROR")
             return
         
@@ -120,7 +120,7 @@ class CommandProcessor:
         
         try:
             full_path.touch()
-            print(full_path.resolve())
+            print(str(full_path.resolve()))
         except Exception:
             print("ERROR")
 
@@ -133,7 +133,7 @@ class CommandProcessor:
             return
         
         try:
-            resolved = path.resolve()
+            resolved = str(path.resolve())
             path.unlink()
             print(f"{resolved} DELETED")
         except Exception:
