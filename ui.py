@@ -146,6 +146,72 @@ class UI:
         print(f"LOADED {full_path}")
 
     #
+    # Print Command
+    #
+    def _print_profile(self, options: list[str]) -> None:
+        prof = self.current_profile
+        if prof is None:
+            print("ERROR")
+            return
+
+        if not options:
+            print("ERROR")
+            return
+        
+        i = 0
+        while i < len(options):
+            opt = options[i]
+
+            if opt == "-usr":
+                print(prof.username)
+                i += 1
+
+            elif opt == "-pwd":
+                print(prof.password)
+                i += 1
+            
+            elif opt == "-bio":
+                print(prof.bio)
+                i += 1
+
+            elif opt == "-posts":
+                posts = prof.get_posts()
+                for idx, post in enumerate(posts):
+                    print(f"{idx}: {post.entry}")
+                i += 1
+
+            elif opt == "-post":
+                if i + 1 >= len(options):
+                    print("ERROR")
+                    return
+                try:
+                    idx = int(options[i + 1])
+                except ValueError:
+                    print("ERROR")
+                    return
+                
+                posts = prof.get_posts()
+                if idx < 0 or idx >= len(posts):
+                    print("ERROR")
+                    return
+                
+                print(posts[idx].entry)
+                i += 2
+
+            elif opt == "-all":
+                print(prof.username)
+                print(prof.password)
+                print(prof.bio)
+                posts = prof.get_posts()
+                for idx, post in enumerate(posts):
+                    print(f"{idx}: {post.entry}")
+                i += 1
+
+            else:
+                print("ERROR")
+                return
+            
+    #
     # Core Command Processing
     #
     def _process_line(self, line: str) -> bool:
@@ -191,6 +257,12 @@ class UI:
         if cmd in no_path_commands:
             if self.current_profile is None or self.current_path is None: 
                 print("ERROR")
+                return True
+            
+            options = parts[1:]
+
+            if cmd == "P":
+                self._print_profile(options)
                 return True
         
             print("ERROR")
