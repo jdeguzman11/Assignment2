@@ -22,7 +22,8 @@ class CommandProcessor:
         else:
             print("ERROR")
     
-    # defining L (list) command
+
+    # defining function for L (list) command
     def _list(self, path, options):
         path = Path(path)
 
@@ -56,6 +57,7 @@ class CommandProcessor:
             if "-r" in options:
                 self._list(d, options)
 
+
     # defining function for -s option
     def _list_search(self, files, dirs, options):
         try:
@@ -88,7 +90,53 @@ class CommandProcessor:
             for d in dirs:
                 self._list(d, options)
 
-    
 
-
+    # defining function for C (create) command
+    def _create(self, path, options):
+        if "-n" not in options:
+            print("ERROR")
+            return
         
+        try:
+            name = options[options.index("-n") + 1]
+        except IndexError:
+            print("ERROR")
+            return
+        
+        directory = Path(path)
+
+        if not directory.exists() or not directory.isdir():
+            print("ERROR")
+            return
+        
+        if not name.endswith(".dsu"):
+            name += ".dsu"
+
+        full_path = directory / name
+
+        if full_path.exists():
+            print("ERROR")
+            return
+        
+        try:
+            full_path.touch()
+            print(full_path.resolve())
+        except Exception:
+            print("ERROR")
+
+    # defining function for D (delete) command
+    def _delete(self, path):
+        path = Path(path)
+
+        if not path.exists() or not path.is_file() or path.suffix != ".dsu":
+            print("ERROR")
+            return
+        
+        try:
+            resolved = path.resolve()
+            path.unlink()
+            print(f"{resolved} DELETED")
+        except Exception:
+            print("ERROR")
+
+    
