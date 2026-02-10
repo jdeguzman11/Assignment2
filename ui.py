@@ -61,7 +61,7 @@ class UI:
             return None
         if not self._valid_userpass(password):
             return None
-        if bio.strip == "":
+        if bio.strip() == "":
             return None
         
         prof = Profile()
@@ -94,6 +94,8 @@ class UI:
     # Open DSU Command
     #
     def _open_dsu(self, path: str) -> None:
+        resolved = str(Path(path).resolve())
+
         prof = Profile()
         
         try:
@@ -103,7 +105,7 @@ class UI:
             return
         
         self.current_profile = prof
-        self.current_path = path
+        self.current_path = resolved
         print(f"LOADED {path}")
 
     #
@@ -359,6 +361,7 @@ class UI:
                         print("ERROR")
                         return
                     plan.append(("addpost", val))
+                    shadow_posts.append(Post(val))
 
                 elif opt == "-delpost":
                     try:
@@ -370,6 +373,7 @@ class UI:
                         print("ERROR")
                         return
                     plan.append(("delpost", idx))
+                    del shadow_posts[idx]
 
                 i += 2
             else:
