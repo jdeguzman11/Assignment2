@@ -7,7 +7,7 @@
 from shlex import split
 from typing import Optional
 from command_processor import CommandProcessor
-from Profile import Profile
+from Profile import Profile, DsuFileError, DsuProfileError
 
 class UI:
     def __init__(self) -> None:
@@ -15,6 +15,19 @@ class UI:
 
         self.current_path: Optional[str] = None
         self.current_profile: Optional[Profile] = None
+
+    def _open_dsu(self, path: str) -> None:
+        prof = Profile()
+        
+        try:
+            prof.load_profile(path)
+        except (DsuFileError, DsuProfileError):
+            print("ERROR")
+            return
+        
+        self.current_profile = prof
+        self.current_path = path
+        print(f"LOADED {path}")
 
     def _process_line(self, line: str) -> bool:
         line = line.strip()
@@ -44,6 +57,10 @@ class UI:
         
             path = parts[1]
             options = parts[2:]
+
+            if cmd == "O":
+                self._open_dsu(path)
+                return True
 
             self.processor.handle(cmd, path, options)
             return True
