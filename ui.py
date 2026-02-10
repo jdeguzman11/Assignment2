@@ -89,6 +89,24 @@ class UI:
                 p.unlink()
         except Exception:
             pass
+
+    @staticmethod
+    def _split_path_and_options(tokens: list[str]) -> tuple[Optional[str], list[str]]:
+        if not tokens:
+            return None, []
+        
+        path_tokens: list[str] = []
+        i = 0
+        while i < len(tokens) and not tokens[i].startswith("-"):
+            path_tokens.append(tokens[i])
+            i += 1
+        
+        if not path_tokens:
+            return None, []
+        
+        path = " ".join(path_tokens)
+        options = tokens[i:]
+        return path, options
     
     #
     # Open DSU Command
@@ -99,14 +117,14 @@ class UI:
         prof = Profile()
         
         try:
-            prof.load_profile(path)
+            prof.load_profile(resolved)
         except (DsuFileError, DsuProfileError):
             print("ERROR")
             return
         
         self.current_profile = prof
         self.current_path = resolved
-        print(f"LOADED {path}")
+        print(f"LOADED {resolved}")
 
     #
     # Create or Load Command
@@ -177,7 +195,7 @@ class UI:
 
             elif opt == "-posts":
                 posts = prof.get_posts()
-                for idx, post in enumerate(posts):
+                for idx, post in enumerate(posts, start=1):
                     print(f"{idx}: {post.entry}")
                 i += 1
 
@@ -186,7 +204,7 @@ class UI:
                     print("ERROR")
                     return
                 try:
-                    idx = int(options[i + 1])
+                    idx = int(options[i + 1]) - 1
                 except ValueError:
                     print("ERROR")
                     return
@@ -204,7 +222,7 @@ class UI:
                 print(prof.password)
                 print(prof.bio)
                 posts = prof.get_posts()
-                for idx, post in enumerate(posts):
+                for idx, post in enumerate(posts, start=1):
                     print(f"{idx}: {post.entry}")
                 i += 1
 
@@ -241,8 +259,10 @@ class UI:
                 print("ERROR")
                 return True
         
-            path = parts[1]
-            options = parts[2:]
+            path, options = self._split_path_and_options(parts[1:])
+            if path is None:
+                print("ERROR")
+                return True
 
             if cmd == "O":
                 self._open_dsu(path)
@@ -365,7 +385,7 @@ class UI:
 
                 elif opt == "-delpost":
                     try:
-                        idx = int(val)
+                        idx = int(val) - 1
                     except ValueError:
                         print("ERROR")
                         return
